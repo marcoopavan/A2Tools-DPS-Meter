@@ -9765,3 +9765,58 @@ html.a2-offline .historyUploadBtn {
 .detailsPanel .detailsHeader .detailsChatCopyBtn.isCopied { color: var(--metric-hps, #7ee2a8); }
 .header .headerBtn.chatCopyBtn.isCopyFailed,
 .detailsPanel .detailsHeader .detailsChatCopyBtn.isCopyFailed { color: #ff6b6b; }
+
+/* ==========================================================================
+   Nossa versao: temas Lobo e Mandala.
+   Tudo aqui vale so com data-theme="lobo" ou "mandala"; os outros temas nao
+   mudam. Fica no fim do arquivo para as atualizacoes do projeto original
+   entrarem sem conflito.
+
+   Lobo: preto e cinza, traco fino, um unico destaque (verde) na sua linha.
+   Mandala: a mesma base, com cada barra na cor da classe do jogador.
+   ========================================================================== */
+:root[data-theme="lobo"],
+:root[data-theme="mandala"] {
+  --hud-bg: 16, 18, 20;
+  --row-fill: #8d959b;
+  --isUser-fill: #9fd42a;
+  --dmg-fill-bg: rgba(159, 212, 42, 0.8);
+  --warning-fill: #f2b84f;
+  --error-fill: #e35d5d;
+  --dps: #e8ebed;
+  --dps-text: #e8ebed;
+  --panel-border: rgba(232, 235, 237, 0.16);
+  --title: rgba(232, 235, 237, 0.98);
+  --rounded: 4px;
+  --rounded-lg: 4px;
+}
+
+/* A barra vira uma linha fina na base da linha, em cor cheia, no lugar da
+   mancha atras do texto. */
+:root[data-theme="lobo"] .list .item,
+:root[data-theme="mandala"] .list .item {
+  border-radius: 0;
+  background: transparent;
+  border-top: 1px solid rgba(232, 235, 237, 0.07);
+}
+:root[data-theme="lobo"] .list .item .fill,
+:root[data-theme="mandala"] .list .item .fill {
+  top: auto;
+  height: 3px;
+  --bar-base: var(--bar);
+  background: var(--bar);
+}
+:root[data-theme="lobo"] .list .item .fill::after,
+:root[data-theme="mandala"] .list .item .fill::after {
+  box-shadow: none;
+  background: var(--bar);
+}
+
+/* Mandala: cada barra na cor da classe; a sua tambem. Sem classe conhecida,
+   fica o cinza do tema. */
+:root[data-theme="mandala"] .list .item .fill,
+:root[data-theme="mandala"] .list .item.isUser .fill,
+:root[data-theme="mandala"] .detailsPanel .detailsPartyBarFill,
+:root[data-theme="mandala"] .detailsPanel .detailsPartyBar.isUser .detailsPartyBarFill {
+  --bar: var(--class-fill, var(--row-fill));
+}

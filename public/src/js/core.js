@@ -35,6 +35,8 @@ const SETTING_CHOICES = {
 // menu: the class colours side by side, and the place-by-place sweeps
 // (styles.css: Spectrum, Aurora, Sunset).
 const THEME_PREVIEWS = {
+  // Nossa versao: Mandala pinta cada barra na cor da classe.
+  "mandala": "linear-gradient(90deg, #e0523f 0% 12.5%, #4f8fe6 12.5% 25%, #9b6ee8 25% 37.5%, #58c46a 37.5% 50%, #f08a3c 50% 62.5%, #36c2c9 62.5% 75%, #f2d15a 75% 87.5%, #e87fb5 87.5% 100%)",
   // The vivid one: the class colours at full strength.
   "aion2-classes-vivid": "linear-gradient(90deg, #4FD1C5 0.00% 11.11%, #5F8CFF 11.11% 22.22%, #41D98A 22.22% 33.33%, #7BE35A 33.33% 44.44%, #9A6BFF 44.44% 55.56%, #E06BFF 55.56% 66.67%, #F2C15A 66.67% 77.78%, #FF9A3D 77.78% 88.89%, #E85D5D 88.89% 100.00%)",
   // The class colours as the meter draws them: about halfway between the
@@ -216,6 +218,9 @@ class DpsApp {
       "natura",
       "obsidian",
       "varian",
+      // Nossa versao: dois temas proprios (styles.css, fim do arquivo).
+      "lobo",
+      "mandala",
     ];
     this.supportQrImages = {
       afdian: "./assets/afdian.png",
@@ -4214,6 +4219,8 @@ class DpsApp {
       { value: "natura", label: this.i18n?.t("settings.theme.options.natura", "Natura") },
       { value: "obsidian", label: this.i18n?.t("settings.theme.options.obsidian", "Obsidian") },
       { value: "varian", label: this.i18n?.t("settings.theme.options.varian", "Varian") },
+      { value: "lobo", label: "Lobo" },
+      { value: "mandala", label: "Mandala" },
     ];
 
     themeOptions.sort((a, b) => a.label.localeCompare(b.label));
