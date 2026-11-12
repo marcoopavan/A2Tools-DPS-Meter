@@ -55,3 +55,21 @@ jobs:
           path: src-tauri/target/release/bundle/msi/*.msi
           if-no-files-found: error
           retention-days: 30
+      # Os plugins da nossa versao (fork A2Tools-Plugins, branch nossa-versao),
+      # junto com o instalador, para baixar tudo do mesmo lugar. Depois do
+      # instalador: um problema aqui nao segura o instalador.
+      - name: Buscar os nossos plugins
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: marcoopavan/A2Tools-Plugins
+          ref: nossa-versao
+          path: nossos-plugins
+          persist-credentials: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nossos-plugins
+          path: |
+            nossos-plugins/plugins
+            nossos-plugins/extras
+          if-no-files-found: error
+          retention-days: 30
