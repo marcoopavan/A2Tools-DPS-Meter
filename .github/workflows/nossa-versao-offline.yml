@@ -1,0 +1,57 @@
+name: Nossa versao offline
+
+# Compila a versao offline (sem conta, sem envio de lutas, sem atualizador)
+# para Windows e guarda o instalador como artefato desta execucao.
+on:
+  push:
+    branches: [nossa-versao]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Instalador offline para Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      # A trava: se o cliente de rede entrar na compilacao offline, para aqui.
+      - name: Conferir que nao ha cliente de rede
+        working-directory: src-tauri
+        shell: bash
+        run: |
+          cargo tree --no-default-features --features desktop --prefix none > tree.txt
+          if grep -E "^(reqwest|tokio-tungstenite|discord-rich-presence) " tree.txt; then
+            echo "A compilacao offline esta puxando um cliente de rede."
+            exit 1
+          fi
+          echo "Sem reqwest, tokio-tungstenite ou discord-rich-presence."
+      - name: Compilar
+        run: npm run build:offline
+      - name: Resumo
+        shell: bash
+        run: |
+          cd src-tauri/target/release/bundle/msi
+          for f in *.msi; do
+            echo "Instalador: $f" >> "$GITHUB_STEP_SUMMARY"
+            echo "SHA-256: $(sha256sum "$f" | cut -d' ' -f1)" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "Codigo: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: a2tools-offline-windows
+          path: src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error
+          retention-days: 30
