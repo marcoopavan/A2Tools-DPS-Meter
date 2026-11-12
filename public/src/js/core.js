@@ -221,6 +221,7 @@ class DpsApp {
       // Nossa versao: dois temas proprios (styles.css, fim do arquivo).
       "lobo",
       "mandala",
+      "fio",
     ];
     this.supportQrImages = {
       afdian: "./assets/afdian.png",
@@ -4221,6 +4222,7 @@ class DpsApp {
       { value: "varian", label: this.i18n?.t("settings.theme.options.varian", "Varian") },
       { value: "lobo", label: "Lobo" },
       { value: "mandala", label: "Mandala" },
+      { value: "fio", label: "Fio" },
     ];
 
     themeOptions.sort((a, b) => a.label.localeCompare(b.label));

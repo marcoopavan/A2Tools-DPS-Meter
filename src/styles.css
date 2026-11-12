@@ -9820,3 +9820,38 @@ html.a2-offline .historyUploadBtn {
 :root[data-theme="mandala"] .detailsPanel .detailsPartyBar.isUser .detailsPartyBarFill {
   --bar: var(--class-fill, var(--row-fill));
 }
+
+/* Fio: o minimo na tela. Cantos bem arredondados, numeros em fonte
+   monoespacada, sem barra atras do texto: so um fio de 2px, ambar na sua
+   linha. Combina com o Modo compacto das Configuracoes. */
+:root[data-theme="fio"] {
+  --hud-bg: 9, 11, 12;
+  --row-fill: #7d878c;
+  --isUser-fill: #f2b24a;
+  --dmg-fill-bg: rgba(242, 178, 74, 0.8);
+  --warning-fill: #f2b84f;
+  --error-fill: #e35d5d;
+  --dps: #f3f1ea;
+  --dps-text: #f3f1ea;
+  --panel-border: rgba(243, 241, 234, 0.14);
+  --title: rgba(243, 241, 234, 0.98);
+  --rounded: 16px;
+  --rounded-lg: 16px;
+  --hud-tech: "A2 JetBrains Mono", ui-monospace, monospace;
+}
+:root[data-theme="fio"] .list .item {
+  background: transparent;
+  border-radius: 8px;
+}
+:root[data-theme="fio"] .list .item .fill {
+  top: auto;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 2px;
+  --bar-base: var(--bar);
+  background: var(--bar);
+}
+:root[data-theme="fio"] .list .item .fill::after {
+  box-shadow: none;
+  background: var(--bar);
+}
