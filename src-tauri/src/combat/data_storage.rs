@@ -755,6 +755,12 @@ struct Inner {
     shop_limits: std::collections::BTreeMap<u32, (u32, i64)>,
     /// Crafts made by recipe id, as the crafting window or a craft last said.
     craft_counts: std::collections::BTreeMap<u32, u32>,
+    /// The character's items by the game's id of each stack, and whether a
+    /// whole list came (a meter started mid-session has only the changes).
+    /// Their owner is the entry list's: both come at a login. See
+    /// `capture::inventory`.
+    inventory: std::collections::BTreeMap<u32, crate::capture::inventory::Item>,
+    inventory_whole: bool,
     /// Kinah gained today with the game's time of it (unix ms), and Abyss
     /// Points this week with the week's limit and when seen (`a5 ff` /
     /// `a6 ff`, `a9 ff`). A login's (`a9 ff` just before its list, `a5 ff`
@@ -909,6 +915,8 @@ impl DataStorage {
                 content_counts: Default::default(),
                 shop_limits: Default::default(),
                 craft_counts: Default::default(),
+                inventory: Default::default(),
+                inventory_whole: false,
                 kinah_today: None,
                 abyss_points: None,
                 login_kinah: None,
@@ -1238,6 +1246,7 @@ impl DataStorage {
             || inner.daily_duty.is_some()
             || !inner.shop_limits.is_empty()
             || !inner.craft_counts.is_empty()
+            || !inner.inventory.is_empty()
             || inner.kinah_today.is_some()
             || inner.abyss_points.is_some();
         if known && (inner.odyle_awaits_self_record || inner.odyle_owner.is_none()) {
@@ -1752,6 +1761,25 @@ impl DataStorage {
         content_counts_of(&self.inner.read(), now_ms())
     }
 
+    /// The character's items: the whole list (a login's or a transfer's,
+    /// replacing the last) or the stacks that changed (`capture::inventory`).
+    /// The whole list comes with the entry list, which names no owner until
+    /// the self record: the items wait with it. A change in a session the
+    /// game has named is theirs.
+    pub fn note_inventory(&self, inventory: crate::capture::inventory::Inventory) {
+        let mut inner = self.inner.write();
+        if inventory.whole {
+            inner.inventory.clear();
+            inner.inventory_whole = true;
+        } else {
+            own_list(&mut inner, false);
+        }
+        tracing::debug!("Items: {} {}", inventory.items.len(), if inventory.whole { "(whole list)" } else { "changed" });
+        for item in inventory.items {
+            inner.inventory.insert(item.uid, item);
+        }
+    }
+
     /// The entry list as plugins see it, read at one moment: whose it is,
     /// the Odyle energy, the counts and the times.
     pub fn entry_list(&self) -> EntryList {
@@ -1763,6 +1791,8 @@ impl DataStorage {
             counts: content_counts_of(&inner, now),
             shop_limits: shop_limits_of(&inner, now),
             crafts: inner.craft_counts.clone(),
+            items: inner.inventory.values().cloned().collect(),
+            items_whole: inner.inventory_whole,
             kinah_today: kinah_today_of(&inner, now),
             abyss_points: abyss_points_of(&inner, now),
             times: inner.content_times.clone(),
@@ -3574,6 +3604,10 @@ pub struct EntryList {
     /// `(bought, next reset)` by item id (`DataStorage::shop_limits_at`).
     pub shop_limits: std::collections::BTreeMap<u32, (u32, Option<i64>)>,
     pub crafts: std::collections::BTreeMap<u32, u32>,
+    /// The character's items (`DataStorage::note_inventory`), and whether
+    /// they are the whole list.
+    pub items: Vec<crate::capture::inventory::Item>,
+    pub items_whole: bool,
     /// As `DataStorage::kinah_today_at` and `abyss_points_at`.
     pub kinah_today: Option<u64>,
     pub abyss_points: Option<(u64, u64)>,

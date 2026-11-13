@@ -34,7 +34,13 @@
 //                                              passages' usage time left (ms), gone once used; the time
 //                                              as the game last sent it). Meter 2.0.96 on also
 //                                              cooldownReduction: the stat page's cooldown reduction in
-//                                              percent (4.3 for -4.3%), null until the game sent your stats
+//                                              percent (4.3 for -4.3%), null until the game sent your stats.
+//                                              Our build also sends items ([[item id, count,
+//                                              container]]: 1 the bag with the currencies, 11 worn,
+//                                              15 the Cube), itemsWhole (true once a login's whole
+//                                              list was read) and arcana ([{ item, worn, position,
+//                                              level, exp, attribute, value, lines: [[skill id,
+//                                              levels]] }]), each null until the game sent them
 //   a2.on("bossMap", ({ map, bosses }) => ...) a map the player just opened, its field bosses as
 //                                              a2.bossTimers gives them (permission
 //                                              "feed:boss-timers", meter 2.0.65 on)

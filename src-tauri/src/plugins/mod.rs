@@ -522,6 +522,34 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
         // the shop opens again. From the same snapshot as the owner.
         let shop = (theirs && !list.shop_limits.is_empty()).then(|| serde_json::json!(list.shop_limits));
         let crafts = (theirs && !list.crafts.is_empty()).then(|| serde_json::json!(list.crafts));
+        // The character's items, theirs the same way (the whole list comes
+        // with the entry list): every stack as `[item id, count, container]`,
+        // `itemsWhole` once a login's list was read (a meter started
+        // mid-session has only the stacks that changed since). Containers:
+        // 1 the bag (the currencies are items in it), 11 worn, 15 the Cube,
+        // the others as the game numbers them. And the Arcana cards with
+        // their attribute and skill lines (`capture::inventory`).
+        let items = (theirs && !list.items.is_empty())
+            .then(|| list.items.iter().map(|i| serde_json::json!([i.item, i.count, i.container])).collect::<Vec<_>>());
+        let arcana = (theirs && !list.items.is_empty()).then(|| {
+            list.items
+                .iter()
+                .filter_map(|i| {
+                    let card = i.arcana.as_ref()?;
+                    Some(serde_json::json!({
+                        "item": i.item,
+                        "worn": i.container == 11,
+                        "position": i.position,
+                        "level": card.level,
+                        "exp": card.exp,
+                        "attribute": card.attribute,
+                        "value": card.value,
+                        "lines": card.lines.iter().map(|&(skill, levels)| serde_json::json!([skill, levels])).collect::<Vec<_>>(),
+                    }))
+                })
+                .collect::<Vec<_>>()
+        });
+        let items_whole = (theirs && !list.items.is_empty()).then_some(list.items_whole);
         // The cooldown reduction on the stat page (percent), from the stat
         // records about this character; none until they came.
         let sheet = s.data_storage.own_stat_sheet();
@@ -538,6 +566,9 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
             "contentCounts": content,
             "shopLimits": shop,
             "crafts": crafts,
+            "items": items,
+            "itemsWhole": items_whole,
+            "arcana": arcana,
             // Kinah gained today and the Abyss Points this week with the
             // week's limit, from login, 0 once their reset has passed.
             // Theirs the same way, from the same snapshot.
