@@ -45,7 +45,9 @@
 //                                              [[stat, value, grade, locked]] }] }] }; a percentage in
 //                                              hundredths), each null until the game sent them, and
 //                                              party ([{ name, slot, level, gearScore, combatPower,
-//                                              serverId }] in slot order, null alone)
+//                                              serverId }] in slot order, null alone) and shopBought
+//                                              ({ "<shop>": { "<offer>": bought } }, each exchange shop
+//                                              as it last opened)
 //   a2.on("bossMap", ({ map, bosses }) => ...) a map the player just opened, its field bosses as
 //                                              a2.bossTimers gives them (permission
 //                                              "feed:boss-timers", meter 2.0.65 on)

@@ -764,6 +764,9 @@ struct Inner {
     /// The pets' type understanding, as a login's pet list last said
     /// (`capture::pet_understanding`). Its owner is the entry list's too.
     pet_understanding: Option<crate::capture::pet_understanding::Understanding>,
+    /// What the character bought in each exchange shop, by shop and offer,
+    /// as each shop last opened (`capture::shop_bought`).
+    shop_bought: std::collections::BTreeMap<u32, std::collections::BTreeMap<u32, u32>>,
     /// Kinah gained today with the game's time of it (unix ms), and Abyss
     /// Points this week with the week's limit and when seen (`a5 ff` /
     /// `a6 ff`, `a9 ff`). A login's (`a9 ff` just before its list, `a5 ff`
@@ -921,6 +924,7 @@ impl DataStorage {
                 inventory: Default::default(),
                 inventory_whole: false,
                 pet_understanding: None,
+                shop_bought: Default::default(),
                 kinah_today: None,
                 abyss_points: None,
                 login_kinah: None,
@@ -1728,6 +1732,7 @@ impl DataStorage {
             // (a server-wide recipe's count is the same on each).
             inner.shop_limits.clear();
             inner.craft_counts.clear();
+            inner.shop_bought.clear();
             // Kinah and Abyss Points too: the new character's come with the
             // login (held until its self record, `login_kinah`).
             inner.kinah_today = None;
@@ -1785,6 +1790,16 @@ impl DataStorage {
         }
     }
 
+    /// What the character bought in one exchange shop, as it opens: the
+    /// shop's list replaces its last (`capture::shop_bought`). In a session
+    /// the game has named it is theirs, as an entry update is.
+    pub fn note_shop_bought(&self, shop: crate::capture::shop_bought::ShopBought) {
+        let mut inner = self.inner.write();
+        own_list(&mut inner, false);
+        tracing::debug!("Shop {}: {} offers bought", shop.shop, shop.offers.len());
+        inner.shop_bought.insert(shop.shop, shop.offers.into_iter().collect());
+    }
+
     /// The pets' type understanding, from a login's pet list: it replaces
     /// the last (`capture::pet_understanding`). It comes just before the
     /// self record, after the entry list, whose owner is its own.
@@ -1807,6 +1822,7 @@ impl DataStorage {
             items: inner.inventory.values().cloned().collect(),
             items_whole: inner.inventory_whole,
             pet_understanding: inner.pet_understanding.clone(),
+            shop_bought: inner.shop_bought.clone(),
             kinah_today: kinah_today_of(&inner, now),
             abyss_points: abyss_points_of(&inner, now),
             times: inner.content_times.clone(),
@@ -3624,6 +3640,8 @@ pub struct EntryList {
     pub items_whole: bool,
     /// The pets' type understanding (`DataStorage::note_pet_understanding`).
     pub pet_understanding: Option<crate::capture::pet_understanding::Understanding>,
+    /// Bought by shop and offer (`DataStorage::note_shop_bought`).
+    pub shop_bought: std::collections::BTreeMap<u32, std::collections::BTreeMap<u32, u32>>,
     /// As `DataStorage::kinah_today_at` and `abyss_points_at`.
     pub kinah_today: Option<u64>,
     pub abyss_points: Option<(u64, u64)>,

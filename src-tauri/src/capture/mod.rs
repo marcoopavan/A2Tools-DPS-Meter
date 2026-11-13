@@ -19,6 +19,7 @@ pub mod pet_understanding;
 pub mod stream_assembler;
 pub mod stream_processor;
 pub mod servers;
+pub mod shop_bought;
 pub mod tcp_order;
 pub mod tunnel;
 

@@ -550,6 +550,9 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
                 .collect::<Vec<_>>()
         });
         let items_whole = (theirs && !list.items.is_empty()).then_some(list.items_whole);
+        // What they bought in each exchange shop, as each last opened:
+        // `{ "<shop>": { "<offer>": bought } }`. Theirs the same way.
+        let shop_bought = (theirs && !list.shop_bought.is_empty()).then(|| serde_json::json!(list.shop_bought));
         // The party as the game's roster last said, in slot order: each
         // member's level, gear score and combat power (0 until the game has
         // sent it). None alone.
@@ -616,6 +619,7 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
             "arcana": arcana,
             "petUnderstanding": understanding,
             "party": party,
+            "shopBought": shop_bought,
             // Kinah gained today and the Abyss Points this week with the
             // week's limit, from login, 0 once their reset has passed.
             // Theirs the same way, from the same snapshot.

@@ -317,6 +317,10 @@ impl StreamProcessor {
         if let Some(inventory) = crate::capture::inventory::parse(packet) {
             self.data_storage.note_inventory(inventory);
         }
+        // What was bought in an exchange shop, as the shop opens.
+        if let Some(shop) = crate::capture::shop_bought::parse(packet) {
+            self.data_storage.note_shop_bought(shop);
+        }
         // The pets' type understanding, at the end of a login's pet list.
         if let Some(understanding) = crate::capture::pet_understanding::parse(packet) {
             self.data_storage.note_pet_understanding(understanding);
