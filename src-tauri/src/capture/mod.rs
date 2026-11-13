@@ -15,6 +15,7 @@ pub mod frame_tap;
 pub mod framing;
 pub mod inventory;
 pub mod packet_accumulator;
+pub mod pet_understanding;
 pub mod stream_assembler;
 pub mod stream_processor;
 pub mod servers;

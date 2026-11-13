@@ -761,6 +761,9 @@ struct Inner {
     /// `capture::inventory`.
     inventory: std::collections::BTreeMap<u32, crate::capture::inventory::Item>,
     inventory_whole: bool,
+    /// The pets' type understanding, as a login's pet list last said
+    /// (`capture::pet_understanding`). Its owner is the entry list's too.
+    pet_understanding: Option<crate::capture::pet_understanding::Understanding>,
     /// Kinah gained today with the game's time of it (unix ms), and Abyss
     /// Points this week with the week's limit and when seen (`a5 ff` /
     /// `a6 ff`, `a9 ff`). A login's (`a9 ff` just before its list, `a5 ff`
@@ -917,6 +920,7 @@ impl DataStorage {
                 craft_counts: Default::default(),
                 inventory: Default::default(),
                 inventory_whole: false,
+                pet_understanding: None,
                 kinah_today: None,
                 abyss_points: None,
                 login_kinah: None,
@@ -1247,6 +1251,7 @@ impl DataStorage {
             || !inner.shop_limits.is_empty()
             || !inner.craft_counts.is_empty()
             || !inner.inventory.is_empty()
+            || inner.pet_understanding.is_some()
             || inner.kinah_today.is_some()
             || inner.abyss_points.is_some();
         if known && (inner.odyle_awaits_self_record || inner.odyle_owner.is_none()) {
@@ -1780,6 +1785,14 @@ impl DataStorage {
         }
     }
 
+    /// The pets' type understanding, from a login's pet list: it replaces
+    /// the last (`capture::pet_understanding`). It comes just before the
+    /// self record, after the entry list, whose owner is its own.
+    pub fn note_pet_understanding(&self, understanding: crate::capture::pet_understanding::Understanding) {
+        tracing::debug!("Pet understanding: {} types, page {:?}", understanding.kinds.len(), understanding.page);
+        self.inner.write().pet_understanding = Some(understanding);
+    }
+
     /// The entry list as plugins see it, read at one moment: whose it is,
     /// the Odyle energy, the counts and the times.
     pub fn entry_list(&self) -> EntryList {
@@ -1793,6 +1806,7 @@ impl DataStorage {
             crafts: inner.craft_counts.clone(),
             items: inner.inventory.values().cloned().collect(),
             items_whole: inner.inventory_whole,
+            pet_understanding: inner.pet_understanding.clone(),
             kinah_today: kinah_today_of(&inner, now),
             abyss_points: abyss_points_of(&inner, now),
             times: inner.content_times.clone(),
@@ -3608,6 +3622,8 @@ pub struct EntryList {
     /// they are the whole list.
     pub items: Vec<crate::capture::inventory::Item>,
     pub items_whole: bool,
+    /// The pets' type understanding (`DataStorage::note_pet_understanding`).
+    pub pet_understanding: Option<crate::capture::pet_understanding::Understanding>,
     /// As `DataStorage::kinah_today_at` and `abyss_points_at`.
     pub kinah_today: Option<u64>,
     pub abyss_points: Option<(u64, u64)>,

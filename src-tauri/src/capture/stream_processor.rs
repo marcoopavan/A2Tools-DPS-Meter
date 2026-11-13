@@ -317,6 +317,10 @@ impl StreamProcessor {
         if let Some(inventory) = crate::capture::inventory::parse(packet) {
             self.data_storage.note_inventory(inventory);
         }
+        // The pets' type understanding, at the end of a login's pet list.
+        if let Some(understanding) = crate::capture::pet_understanding::parse(packet) {
+            self.data_storage.note_pet_understanding(understanding);
+        }
         // The field bosses on a map the player opened (boss timers).
         if let Some(map) = crate::capture::boss_map::parse(packet, crate::clock::now_ms()) {
             self.data_storage.note_boss_map(map);

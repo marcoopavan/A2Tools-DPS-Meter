@@ -550,6 +550,51 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
                 .collect::<Vec<_>>()
         });
         let items_whole = (theirs && !list.items.is_empty()).then_some(list.items_whole);
+        // The party as the game's roster last said, in slot order: each
+        // member's level, gear score and combat power (0 until the game has
+        // sent it). None alone.
+        let party = {
+            let mut members: Vec<_> = s.data_storage.get_party_members().into_iter().collect();
+            members.sort_by(|a, b| a.1.slot.cmp(&b.1.slot).then_with(|| a.0.cmp(&b.0)));
+            (members.len() >= 2).then(|| {
+                members
+                    .iter()
+                    .map(|(name, m)| {
+                        serde_json::json!({
+                            "name": name,
+                            "slot": m.slot,
+                            "level": m.level,
+                            "gearScore": m.gear_score,
+                            "combatPower": m.combat_power,
+                            "serverId": m.server_id,
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            })
+        };
+        // The pets' type understanding, theirs the same way: the page in use,
+        // what is held of each essence, and each type's pages of lines as
+        // `[stat, value, grade, locked]` (a percentage in hundredths).
+        let understanding = list.pet_understanding.as_ref().filter(|_| theirs).map(|u| {
+            let essences: std::collections::BTreeMap<u8, u32> = u.essences.iter().copied().collect();
+            let kinds: Vec<Value> = u
+                .kinds
+                .iter()
+                .map(|k| {
+                    let pages: Vec<Value> = k
+                        .pages
+                        .iter()
+                        .map(|p| {
+                            let lines: Vec<Value> =
+                                p.lines.iter().map(|l| serde_json::json!([l.stat, l.value, l.grade, l.locked])).collect();
+                            serde_json::json!({ "page": p.page, "lines": lines })
+                        })
+                        .collect();
+                    serde_json::json!({ "kind": k.kind, "pages": pages })
+                })
+                .collect();
+            serde_json::json!({ "page": u.page, "essences": essences, "kinds": kinds })
+        });
         // The cooldown reduction on the stat page (percent), from the stat
         // records about this character; none until they came.
         let sheet = s.data_storage.own_stat_sheet();
@@ -569,6 +614,8 @@ fn character(app: &tauri::AppHandle) -> Option<Value> {
             "items": items,
             "itemsWhole": items_whole,
             "arcana": arcana,
+            "petUnderstanding": understanding,
+            "party": party,
             // Kinah gained today and the Abyss Points this week with the
             // week's limit, from login, 0 once their reset has passed.
             // Theirs the same way, from the same snapshot.
